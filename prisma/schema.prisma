@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  first_name String
+  last_name String
+  date_of_birth DateTime
+  email String @unique
+  
+  phoneNumbers UserPhoneNumber[]
+  
+  positionId String @db.ObjectId
+  position Position @relation(fields: [positionId], references: [id])
+
+  departmentId String @db.ObjectId
+  department Department @relation(fields: [departmentId], references: [id])
+
+  work_status String @default("working")
+
+  photo_url String?
+
+  login String @unique
+
+  follows UserFollows[] @relation(name: "follows")
+  followers UserFollows[] @relation(name: "followers")
+}
+
+model UserPhoneNumber {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  phone_number String
+  type String @default("cell")
+  
+  userId String @db.ObjectId
+  user User @relation(fields: [userId], references: [id])
+}
+
+model UserFollows {
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+    
+    userId String @db.ObjectId
+    user User @relation(fields: [userId], references: [id], name: "follows" )
+    
+    followId String @db.ObjectId
+    follow User @relation(fields: [followId], references: [id], name: "followers")
+}
+
+model Position {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  title String
+
+  users User[]
+}
+
+model Department {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+
+  users User[]
+}
